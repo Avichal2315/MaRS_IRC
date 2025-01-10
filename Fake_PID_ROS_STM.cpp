@@ -143,30 +143,6 @@ void driveCallback(const std_msgs::Int16 &msg) {
 
 void ChoiceCallback(const std_msgs::Int16 &msg) {
 choice = msg.data;
-//   if (prev_choice != new_choice) {
-//     pwm_adjust_for_all_wheels(0); // Stop motors before changing direction
-//     prev_pwm = 0;
-//     call_choice(new_choice);
-//   }
-//   prev_choice = new_choice;
- //call_choice(choice);
-
-// if((prev_choice == choice)||(prev_choice == 0))               //rover is moving in same direction
-//   {
-//     pwm_adjust_for_all_wheels(input_pwm);
-//   }
-//   else                                    //rover is changing directions
-//   {
-//     call_choice(prev_choice);
-//     pwm_adjust_for_all_wheels(0);
-//     prev_pwm = 0;
-//     call_choice(choice);
-//     pwm_adjust_for_all_wheels(input_pwm);
-//   }
-
-//   prev_choice = choice;
-//   prev_pwm = input_pwm;
-
 
 }
 
@@ -241,11 +217,10 @@ void call_choice(int ch) {
       spotright();
       break;
     case 0: // Stop
-      pwm_adjust_for_all_wheels(0);
-      break;
-    default:
-      Serial.println("Invalid choice");
-      break;
+	forward();
+	input_pwm = 0;
+	break;
+
   }
 }
 
