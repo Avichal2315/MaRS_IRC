@@ -48,7 +48,7 @@ void done();
 #define pwm_br PA0
 
 int choice;
-int input_pwm = 100;
+int input_pwm = 120;
 int present_angle = 0;
 int current_angle = 0;
 int target_angle = 0;
@@ -92,8 +92,8 @@ void motor::pwm(int input_pwm)
 
 motor motorFLS(dir_fl, pwm_fl);
 motor motorFRS(dir_fr, pwm_fr);
-motor motorBRS(dir_br, pwm_br);
-motor motorBLS(dir_bl, pwm_bl);
+//motor motorBRS(dir_br, pwm_br);
+//motor motorBLS(dir_bl, pwm_bl);
 
 
 
@@ -117,52 +117,87 @@ void commandCallback(const std_msgs::Int16& msg) {
   //my_time = millis();
   //Serial.println(my_time);
 
-  switch (choice)
-  {
-    case 1:
+  // switch (choice)
+  // {
+  //   case 1:
       
 
-        target_angle = 2000;
+  //       target_angle = 2000;
 
-        // int initial_time = millis(), current_time = millis();
-        // while (current_time - initial_time < 5000)
-        // {
-        //   current_time = millis();
-        // }
-         // Update safe after action
-          // Set flag to indicate action taken
-          break;
+  //       // int initial_time = millis(), current_time = millis();
+  //       // while (current_time - initial_time < 5000)
+  //       // {
+  //       //   current_time = millis();
+  //       // }
+  //        // Update safe after action
+  //         // Set flag to indicate action taken
+  //         break;
       
 
-    // case 2:
-    //   Serial.print(safe);
-    //   if (safe == 1)  // Ensure the action can only happen after case 1
-    //   {
+  //   // case 2:
+  //   //   Serial.print(safe);
+  //   //   if (safe == 1)  // Ensure the action can only happen after case 1
+  //   //   {
         
-    //     safe = 2;  // Set to 2 after second action
-    //     flag = 1;  // Set flag to indicate action taken
-    //     delay(5000);
-    //     done();
-    //   }
-    //   break;
+  //   //     safe = 2;  // Set to 2 after second action
+  //   //     flag = 1;  // Set flag to indicate action taken
+  //   //     delay(5000);
+  //   //     done();
+  //   //   }
+  //   //   break;
 
-     case 2:
-        target_angle = 0;
-        break;
-    //   frontsteerR();
-    //   motorFRS.pwm(input_pwm);
-    //   motorFLS.pwm(input_pwm);
-    //   delay(1000);
-    //   done();
-    //   break;
+  //    case 2:
+  //       target_angle = 0;
+  //       break;
+  //   //   frontsteerR();
+  //   //   motorFRS.pwm(input_pwm);
+  //   //   motorFLS.pwm(input_pwm);
+  //   //   delay(1000);
+  //   //   done();
+  //   //   break;
 
-    // case 3:
-    //   frontsteerL();
-    //   motorFRS.pwm(input_pwm);
-    //   motorFLS.pwm(input_pwm);
-    //     delay(1000);
-    //     done();
-    //   break;
+  //   // case 3:
+  //   //   frontsteerL();
+  //   //   motorFRS.pwm(input_pwm);
+  //   //   motorFLS.pwm(input_pwm);
+  //   //     delay(1000);
+  //   //     done();
+  //   //   break;
+  // }
+  switch(choice)
+  {
+    case 1: //Right Wheel Right
+      motorFRS.clockwise();
+      motorFRS.pwm(input_pwm); //Input PWM from joystick
+      break;
+    case 2: //RIght WHeel Left
+      motorFRS.anticlockwise();
+      motorFRS.pwm(input_pwm); //Input PWM from joystick
+      break; 
+    case 3: //Left Wheel Right
+      motorFLS.clockwise();
+      motorFLS.pwm(input_pwm);
+      break;
+    case 4: //Left wheel Left
+      motorFLS.anticlockwise();
+      motorFLS.pwm(input_pwm);
+      break;
+    case 5://Both Right
+      motorFLS.clockwise();
+      motorFRS.clockwise();
+      motorFLS.pwm(input_pwm);
+      motorFRS.pwm(input_pwm);
+      break;
+    case 6: //Both Left
+      motorFLS.anticlockwise();
+      motorFRS.anticlockwise();
+      motorFLS.pwm(input_pwm);
+      motorFRS.pwm(input_pwm);
+      break;
+    case 0: //Nothing moves
+      motorFLS.pwm(0);
+      motorFRS.pwm(0);
+      break;
   }
 }
 
@@ -171,41 +206,41 @@ ros::Subscriber <std_msgs::Int16>  steer_sub("/rover/steer", commandCallback); /
 
 
 
-void done()
-{
-  motorFRS.pwm(0);
-  motorBRS.pwm(0);
-  motorFLS.pwm(0);
-  motorBLS.pwm(0);
-}
+// void done()
+// {
+//   motorFRS.pwm(0);
+//   //motorBRS.pwm(0);
+//   motorFLS.pwm(0);
+//   //motorBLS.pwm(0);
+// }
 
-void frontsteerR()
-{
-  motorFRS.clockwise();
-  motorFLS.clockwise();
-}
+// void frontsteerR()
+// {
+//   motorFRS.clockwise();
+//   motorFLS.clockwise();
+// }
 
-void spotturn()
-{
-  motorFRS.clockwise();
-  motorBRS.anticlockwise();
-  motorFLS.clockwise();
-  motorBLS.anticlockwise();
-}
+// void spotturn()
+// {
+//   motorFRS.clockwise();
+//   //motorBRS.anticlockwise();
+//   motorFLS.clockwise();
+//   //motorBLS.anticlockwise();
+// }
 
-void frontsteerL()
-{
-  motorFRS.anticlockwise();
-  motorFLS.anticlockwise();
-}
+// void frontsteerL()
+// {
+//   motorFRS.anticlockwise();
+//   motorFLS.anticlockwise();
+// }
 
-void spotturnrev()
-{
-  motorFRS.anticlockwise();
-  motorBRS.clockwise();
-  motorFLS.anticlockwise();
-  motorBLS.clockwise();
-}
+// void spotturnrev()
+// {
+//   motorFRS.anticlockwise();
+//   //motorBRS.clockwise();
+//   motorFLS.anticlockwise();
+//   ///motorBLS.clockwise();
+// }
 
 
 
@@ -219,29 +254,31 @@ void setup()
 
 void loop()
 {
-  present_angle = millis();
-  if (target_angle - 5 > current_angle)
-  {
-    spotturn();
-    motorFRS.pwm(input_pwm*2);
-    motorBRS.pwm(input_pwm);
-    motorFLS.pwm(input_pwm);
-    motorBLS.pwm(input_pwm*2);
-    delay(10);
-    current_angle += millis() - present_angle;
-  } else if (target_angle + 5 < current_angle)
-  {
-    spotturnrev();
-    motorFRS.pwm(input_pwm*2);
-    motorBRS.pwm(input_pwm);
-    motorFLS.pwm(input_pwm);
-    motorBLS.pwm(input_pwm*2);
-    delay(10);
-    current_angle -= millis() - present_angle;
-  } else
-  {
-    delay(10);
-    done();
-  }
+  // present_angle = millis();
+  // if (target_angle - 5 > current_angle)
+  // {
+  //   spotturn();
+  //   motorFRS.pwm(input_pwm*2);
+  //   //motorBRS.pwm(input_pwm);
+  //   motorFLS.pwm(input_pwm);
+  //   //motorBLS.pwm(input_pwm*2);
+  //   delay(10);
+  //   current_angle += millis() - present_angle;
+  // } else if (target_angle + 5 < current_angle)
+  // {
+  //   spotturnrev();
+  //   motorFRS.pwm(input_pwm*2);
+  //   //motorBRS.pwm(input_pwm);
+  //   motorFLS.pwm(input_pwm);
+  //   //motorBLS.pwm(input_pwm*2);
+  //   delay(10);
+  //   current_angle -= millis() - present_angle;
+  // } else
+  // {
+  //   delay(10);
+  //   done();
+  // }
+
+  delay(10);
   nh.spinOnce();
 }
