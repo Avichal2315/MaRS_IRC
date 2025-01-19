@@ -3,6 +3,7 @@
 #include "sensor_msgs/Joy.h"
 
 
+
 int drive_speed = 0; 
 int manipulator_pwm = 0;
 int drive_direction = 0; 
@@ -14,6 +15,8 @@ public:
    JoyControl() {
        ros::NodeHandle nh;
 
+       
+
 
        // subscribe to joystick inputs
        joy_subscriber_ = nh.subscribe("/joy", 10, &JoyControl::joyCallback, this);
@@ -24,6 +27,8 @@ public:
        drive_direction_publisher_ = nh.advertise<std_msgs::Int16>("/rover/choice", 10, true);
        manipulator_pwm_publisher_ = nh.advertise<std_msgs::Int16>("/manipulator/pwm", 10, true);
        manipulator_choice_publisher_ = nh.advertise<std_msgs::Int16>("/manipulator/choice", 10, true);
+        //publisher for steer
+       steer_publisher_ = nh.advertise<std_msgs::Int16>("/rover/steer", 10, true);
    }
 
 
@@ -32,7 +37,7 @@ public:
        std_msgs::Int16 drive_direction_msg;
        std_msgs::Int16 manipulator_pwm_msg;
        std_msgs::Int16 manipulator_choice_msg;
-
+       std_msgs::Int16 steer_msg;
 
        // Drive control
      //start button-increase drive's pwm and select button is decrease
@@ -57,17 +62,23 @@ public:
        } else if (msg->buttons[11] == 1) { 
            drive_speed = std::min(drive_speed + 5, 255);
            ROS_INFO("Drive: Increase Speed: %d", drive_speed);
-       }
+       }else if(msg->buttons[8] == 1){
+            steer_msg.data = 1;
+            ROS_INFO("Spot turn");
+       }else if(msg->buttons[9] == 1){
+            steer_msg.data = 2;
+            ROS_INFO("Spot turn reverse");
+            }
 
 
        // manipulator's pwm
-       if (msg->buttons[7] == 1) {
-           manipulator_pwm = std::min(manipulator_pwm + 5, 255);
-           ROS_INFO("Manipulator: Increase PWM: %d", manipulator_pwm);
-       } else if (msg->buttons[6] == 1) { 
-           manipulator_pwm = std::max(manipulator_pwm - 5, 0);
-           ROS_INFO("Manipulator: Decrease PWM: %d", manipulator_pwm);
-       }
+       //if (msg->buttons[7] == 1) {
+           //manipulator_pwm = std::min(manipulator_pwm + 5, 255);
+           //ROS_INFO("Manipulator: Increase PWM: %d", manipulator_pwm);
+       //} else if (msg->buttons[6] == 1) { 
+           //manipulator_pwm = std::max(manipulator_pwm - 5, 0);
+           //ROS_INFO("Manipulator: Decrease PWM: %d", manipulator_pwm);
+       //}
 
 
        if (msg->axes[0] == 0 && msg->axes[1] == 0 && msg->axes[2] == 0 && msg->axes[3] == 0 && msg->axes[6] == 0 && msg->axes[7] == 0) {
@@ -77,44 +88,56 @@ public:
          //3,2 are right side knob and 1,0 are left
            if (msg->axes[1] == +1) { 
                manipulator_choice = 1;
-               ROS_INFO("Manipulator: LA1 Forward");
+               ROS_INFO("Manipulator: First Arm Up");
+               manipulator_pwm = 200;
            } else if (msg->axes[1] ==-1) { 
                manipulator_choice = 2;
-               ROS_INFO("Manipulator: LA1 Backward");
+               ROS_INFO("Manipulator: First Arm Down");
+               manipulator_pwm = 200;
            } else if (msg->axes[3] == +1) {
                manipulator_choice = 3;
-               ROS_INFO("Manipulator: LA2 Forward");
+               ROS_INFO("Manipulator: Second Arm Up");
+               manipulator_pwm = 200;
            } else if (msg->axes[3] ==-1) {
                manipulator_choice = 4;
-               ROS_INFO("Manipulator: LA2 Backward");
+               ROS_INFO("Manipulator: Second Arm Down");
+               manipulator_pwm = 200;
            } else if (msg->axes[2] == +1) {
                manipulator_choice = 5;
-               ROS_INFO("Manipulator: Belt Clockwise");
+               ROS_INFO("Manipulator: Belt Up");
+               manipulator_pwm = 160;
            } else if (msg->axes[2] ==-1) {
                manipulator_choice = 6;
-               ROS_INFO("Manipulator: Belt Anti-Clockwise");                                    
+               ROS_INFO("Manipulator: Belt Down"); 
+               manipulator_pwm = 160;                                   
            } else if (msg->axes[0] == -1) {
-               manipulator_choice = 7;
-               ROS_INFO("Manipulator: Base Clockwise");
-           } else if (msg->axes[0] ==+1) {
                manipulator_choice = 8;
-               ROS_INFO("Manipulator: Base Anti-Clockwise"); 
+               ROS_INFO("Manipulator: Base Right");
+               manipulator_pwm= 130;
+           } else if (msg->axes[0] ==+1) {
+               manipulator_choice = 7;
+               ROS_INFO("Manipulator: Base Left"); 
+               manipulator_pwm =130;
            }
             else if(msg->axes[6]== +1){
             manipulator_choice = 9;
-            ROS_INFO("Manipulator: Bevel_gear Clockwise");
+            ROS_INFO("Manipulator: Bevel_gear Left");
+            manipulator_pwm = 160;
            }
            else if(msg->axes[6]== -1){
             manipulator_choice = 10;
-            ROS_INFO("Manipulator: Bevel_gear Anti-Clockwise");
+            ROS_INFO("Manipulator: Bevel_gear Right");
+            manipulator_pwm = 160;
            }
            else if(msg->axes[7]== +1){
             manipulator_choice = 11;
-            ROS_INFO("Manipulator: Gripper Clockwise");
+            ROS_INFO("Manipulator: Gripper Close");
+            manipulator_pwm = 150;
            }
            else if(msg->axes[7]== -1){      
             manipulator_choice = 12;
-            ROS_INFO("Manipulator: Gripper Anti-Clockwise");
+            ROS_INFO("Manipulator: Gripper Open");
+            manipulator_pwm = 150;
            }
        }
        // publish drive msgs
@@ -127,6 +150,7 @@ public:
        manipulator_choice_msg.data = manipulator_choice;
        manipulator_pwm_publisher_.publish(manipulator_pwm_msg);
        manipulator_choice_publisher_.publish(manipulator_choice_msg);
+       steer_publisher_.publish(steer_msg);
    }
 
 
@@ -136,6 +160,7 @@ private:
    ros::Publisher drive_direction_publisher_;
    ros::Publisher manipulator_pwm_publisher_;
    ros::Publisher manipulator_choice_publisher_;
+   ros::Publisher steer_publisher_;
 };
 
 
