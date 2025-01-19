@@ -8,6 +8,8 @@ int drive_speed = 0;
 int manipulator_pwm = 0;
 int drive_direction = 0; 
 int manipulator_choice = 0;
+int individual_control = 0;
+
 
 
 class JoyControl {
@@ -38,6 +40,7 @@ public:
        std_msgs::Int16 manipulator_pwm_msg;
        std_msgs::Int16 manipulator_choice_msg;
        std_msgs::Int16 steer_msg;
+       //std_msgs::Int16 individual_control_msg;
 
        // Drive control
      //start button-increase drive's pwm and select button is decrease
@@ -62,13 +65,37 @@ public:
        } else if (msg->buttons[11] == 1) { 
            drive_speed = std::min(drive_speed + 5, 255);
            ROS_INFO("Drive: Increase Speed: %d", drive_speed);
-       }else if(msg->buttons[8] == 1){
-            steer_msg.data = 1;
-            ROS_INFO("Spot turn");
+       }else if ((msg->buttons[6] == 1) && (msg->buttons[7] == 1)){ //steer code starts
+       
+              steer_msg.data = 5;
+            ROS_INFO("both wheels left"); //left
+            }else if ((msg->buttons[8] == 1) && (msg->buttons[9] == 1)){
+            
+              steer_msg.data = 6;
+            ROS_INFO("both wheels right"); //right
+            
        }else if(msg->buttons[9] == 1){
+       
             steer_msg.data = 2;
-            ROS_INFO("Spot turn reverse");
+            ROS_INFO("right wheel right"); //right
+            
+            }else if(msg->buttons[7] == 1){
+            
+            steer_msg.data = 1;
+            ROS_INFO("right wheel left"); //left
+            
+            }else if(msg->buttons[6] == 1){
+            
+              steer_msg.data = 3;
+            ROS_INFO("left wheel left"); //left
+            
+            }else if(msg->buttons[8] == 1){
+            
+              steer_msg.data = 4;
+            ROS_INFO("left wheel right"); //right
+            
             }
+
 
 
        // manipulator's pwm
@@ -78,9 +105,7 @@ public:
        //} else if (msg->buttons[6] == 1) { 
            //manipulator_pwm = std::max(manipulator_pwm - 5, 0);
            //ROS_INFO("Manipulator: Decrease PWM: %d", manipulator_pwm);
-       //}
-
-
+       
        if (msg->axes[0] == 0 && msg->axes[1] == 0 && msg->axes[2] == 0 && msg->axes[3] == 0 && msg->axes[6] == 0 && msg->axes[7] == 0) {
            manipulator_choice = 0;
        } else {
@@ -139,7 +164,28 @@ public:
             ROS_INFO("Manipulator: Gripper Open");
             manipulator_pwm = 150;
            }
-       }
+
+	}
+         /* while(ros::ok()){
+            std::cout<<"individual control "<<std::endl;
+
+            std::cin>> individual_control;
+          }*/
+
+          // if(individual_control == 1){
+          //   ROS_INFO("FL:  turn");
+          // }else if(individual_control == 2){
+          //   ROS_INFO("FL:  turn reverse");
+          // }else if(individual_control == 3){
+          //   ROS_INFO("FR:  turn");
+          // }else if(individual_control == 4){
+          //   ROS_INFO("FR:  turn reverse");
+          // }else if(individual_control == 5){
+          //   ROS_INFO("RL:  turn");
+          // }else if(individual_control == 6){
+          //   ROS_INFO("RL:  turn reverse");
+          // }else if(individual_control == 7){
+          //   ROS_INFO("RR:  turn");
        // publish drive msgs
        drive_speed_msg.data = drive_speed;
        drive_direction_msg.data = drive_direction;
@@ -151,6 +197,8 @@ public:
        manipulator_pwm_publisher_.publish(manipulator_pwm_msg);
        manipulator_choice_publisher_.publish(manipulator_choice_msg);
        steer_publisher_.publish(steer_msg);
+
+
    }
 
 
